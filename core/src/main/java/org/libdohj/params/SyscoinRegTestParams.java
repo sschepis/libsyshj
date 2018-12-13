@@ -63,9 +63,9 @@ public class SyscoinRegTestParams extends SyscoinTestNet3Params {
         synchronized (SyscoinRegTestParams.class) {
             if (genesis == null) {
                 genesis = super.getGenesisBlock();
-                genesis.setNonce(0);
+                genesis.setNonce(6887866);
                 genesis.setDifficultyTarget(0x207fffffL);
-                genesis.setTime(1296688602L);
+                genesis.setTime(1524508008L);
                 checkState(genesis.getVersion() == 1);
                 checkState(genesis.getMerkleRoot().toString().equals("97ddfbbae6be97fd6cdf3e7ca13232a3afff2353e29badfab7f73011edd4ced9"));
                 checkState(genesis.getHashAsString().toLowerCase().equals("530827f38f93b43ed12af0b3ad25a288dc02ed74d6d7857862df51fc56c416f9"));

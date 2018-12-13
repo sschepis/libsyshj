@@ -36,40 +36,36 @@ import static org.bitcoinj.core.Coin.COIN;
  * Common parameters for SYScoin networks.
  */
 
-// TODO: fix params
+// TODO: Have to update difficulty calculation algorithm
 public abstract class AbstractSyscoinParams extends NetworkParameters implements AuxPoWNetworkParameters {
     /** Standard format for the SYS denomination. */
     public static final MonetaryFormat SYS;
     /** Standard format for the mSYS denomination. */
     public static final MonetaryFormat MSYS;
-    /** Standard format for the Koinu denomination. */
-    public static final MonetaryFormat SYSTOSHI;
+    /** Standard format for the Satoshi denomination. */
+    public static final MonetaryFormat SATOSHI;
 
-    public static final int DIGISHIELD_BLOCK_HEIGHT = 145000; // Block height to use Digishield from
-    public static final int AUXPOW_CHAIN_ID = 0x0062; // 98
-    public static final int SYS_TARGET_TIMESPAN = 4 * 60 * 60;  // 4 hours per difficulty cycle, on average.
-    public static final int SYS_TARGET_TIMESPAN_NEW = 60;  // 60s per difficulty cycle, on average. Kicks in after block 145k.
+    public static final int AUXPOW_CHAIN_ID = 0x1000; // 98
+    public static final int SYS_TARGET_TIMESPAN = 6 * 60 * 60;  // 4 hours per difficulty cycle, on average.
     public static final int SYS_TARGET_SPACING = 1 * 60;  // 1 minute per block.
     public static final int SYS_INTERVAL = SYS_TARGET_TIMESPAN / SYS_TARGET_SPACING;
-    public static final int SYS_INTERVAL_NEW = SYS_TARGET_TIMESPAN_NEW / SYS_TARGET_SPACING;
 
     /** Currency code for base 1 Syscoin. */
     public static final String CODE_SYS = "SYS";
     /** Currency code for base 1/1,000 Syscoin. */
     public static final String CODE_MSYS = "mSYS";
     /** Currency code for base 1/100,000,000 Syscoin. */
-    public static final String CODE_KOINU = "Satoshi";
+    public static final String CODE_SATOSHI = "Satoshi";
 
-    private static final int BLOCK_MIN_VERSION_AUXPOW = 0x00620002;
     private static final int BLOCK_VERSION_FLAG_AUXPOW = 0x00000100;
 
     static {
         SYS = MonetaryFormat.BTC.noCode()
             .code(0, CODE_SYS)
             .code(3, CODE_MSYS)
-            .code(7, CODE_KOINU);
+            .code(7, CODE_SATOSHI);
         MSYS = SYS.shift(3).minDecimals(2).optionalDecimals(2);
-        SYSTOSHI = SYS.shift(7).minDecimals(0).optionalDecimals(2);
+        SATOSHI = SYS.shift(7).minDecimals(0).optionalDecimals(2);
     }
 
     /** The string returned by getId() for the main, production network where people trade things. */
@@ -79,33 +75,24 @@ public abstract class AbstractSyscoinParams extends NetworkParameters implements
     /** The string returned by getId() for the regtest. */
     public static final String ID_SYS_REGTEST = "org.syscoin.regtest";
 
-    public static int getBlockMinVersionAuxpow() {
-        return BLOCK_MIN_VERSION_AUXPOW;
-    }
-
     @Override
     public int getMajorityWindow() {
         return super.getMajorityWindow();
     }
 
-    protected final int newInterval;
-    protected final int newTargetTimespan;
     protected final int diffChangeTarget;
 
     protected Logger log = LoggerFactory.getLogger(AbstractSyscoinParams.class);
     public static final int SYSCOIN_PROTOCOL_VERSION_AUXPOW = 70003;
     public static final int SYSCOIN_PROTOCOL_VERSION_CURRENT = 70004;
 
-    private static final Coin BASE_SUBSIDY   = COIN.multiply(500000);
-    private static final Coin STABLE_SUBSIDY = COIN.multiply(10000);
+    private static final Coin BASE_SUBSIDY   = COIN.multiply(50);
 
     public AbstractSyscoinParams(final int setDiffChangeTarget) {
         super();
         genesisBlock = createGenesis(this);
         interval = SYS_INTERVAL;
-        newInterval = SYS_INTERVAL_NEW;
         targetTimespan = SYS_TARGET_TIMESPAN;
-        newTargetTimespan = SYS_TARGET_TIMESPAN_NEW;
         maxTarget = Utils.decodeCompactBits(0x1e0fffffL);
         diffChangeTarget = setDiffChangeTarget;
 
@@ -136,31 +123,7 @@ public abstract class AbstractSyscoinParams extends NetworkParameters implements
 
     @Override
     public Coin getBlockSubsidy(final int height) {
-        if (height < DIGISHIELD_BLOCK_HEIGHT) {
-            // Up until the Digishield hard fork, subsidy was based on the
-            // previous block hash. Rather than actually recalculating that, we
-            // simply use the maximum possible here, and let checkpoints enforce
-            // that new blocks with different values can't be mined
-            return BASE_SUBSIDY.shiftRight(height / getSubsidyDecreaseBlockCount()).multiply(2);
-        } else if (height < 600000) {
-            return BASE_SUBSIDY.shiftRight(height / getSubsidyDecreaseBlockCount());
-        } else {
-            return STABLE_SUBSIDY;
-        }
-    }
-
-    /** How many blocks pass between difficulty adjustment periods. After new diff algo. */
-    public int getNewInterval() {
-        return newInterval;
-    }
-
-    /**
-     * How much time in seconds is supposed to pass between "interval" blocks. If the actual elapsed time is
-     * significantly different from this value, the network difficulty formula will produce a different value.
-     * SYScoin after block 145k uses 60 seconds.
-     */
-    public int getNewTargetTimespan() {
-        return newTargetTimespan;
+        return BASE_SUBSIDY.shiftRight(height / getSubsidyDecreaseBlockCount());
     }
 
     public MonetaryFormat getMonetaryFormat() {
@@ -180,7 +143,7 @@ public abstract class AbstractSyscoinParams extends NetworkParameters implements
 
     @Override
     public String getUriScheme() {
-        return "SYScoin";
+        return "Syscoin";
     }
 
     @Override
@@ -188,7 +151,7 @@ public abstract class AbstractSyscoinParams extends NetworkParameters implements
         return false;
     }
 
-    /** SYScoin: Normally minimum difficulty blocks can only occur in between
+    /** Syscoin: Normally minimum difficulty blocks can only occur in between
      * retarget blocks. However, once we introduce Digishield every block is
      * a retarget, so we need to handle minimum difficulty on all blocks.
      */
@@ -242,10 +205,7 @@ public abstract class AbstractSyscoinParams extends NetworkParameters implements
 
         final Block prev = storedPrev.getHeader();
         final int previousHeight = storedPrev.getHeight();
-        final boolean digishieldAlgorithm = previousHeight + 1 >= this.getDigishieldBlockHeight();
-        final int retargetInterval = digishieldAlgorithm
-            ? this.getNewInterval()
-            : this.getInterval();
+        final int retargetInterval = this.getInterval();
 
         // Is this supposed to be a difficulty transition point?
         if ((storedPrev.getHeight() + 1) % retargetInterval != 0) {
@@ -338,27 +298,12 @@ public abstract class AbstractSyscoinParams extends NetworkParameters implements
         final long lastDifficultyTarget, final long lastRetargetTime,
         final long nextDifficultyTarget) {
         final int height = previousHeight + 1;
-        final boolean digishieldAlgorithm = height >= this.getDigishieldBlockHeight();
-        final int retargetTimespan = digishieldAlgorithm
-            ? this.getNewTargetTimespan()
-            : this.getTargetTimespan();
+        final int retargetTimespan = this.getTargetTimespan();
         int actualTime = (int) (previousBlockTime - lastRetargetTime);
         final int minTimespan;
         final int maxTimespan;
 
-        // Limit the adjustment step.
-        if (digishieldAlgorithm)
-        {
-            // Round towards zero to match the C++ implementation.
-            if (actualTime < retargetTimespan) {
-                actualTime = (int)Math.ceil(retargetTimespan + (actualTime - retargetTimespan) / 8.0);
-            } else {
-                actualTime = (int)Math.floor(retargetTimespan + (actualTime - retargetTimespan) / 8.0);
-            }
-            minTimespan = retargetTimespan - (retargetTimespan / 4);
-            maxTimespan = retargetTimespan + (retargetTimespan / 2);
-        }
-        else if (height > 10000)
+        if (height > 10000)
         {
             minTimespan = retargetTimespan / 4;
             maxTimespan = retargetTimespan * 4;
@@ -390,14 +335,6 @@ public abstract class AbstractSyscoinParams extends NetworkParameters implements
         BigInteger mask = BigInteger.valueOf(0xFFFFFFL).shiftLeft(accuracyBytes * 8);
         newTarget = newTarget.and(mask);
         return Utils.encodeCompactBits(newTarget);
-    }
-
-    /**
-     * Get the block height from which the Digishield difficulty calculation
-     * algorithm is used.
-     */
-    public int getDigishieldBlockHeight() {
-        return DIGISHIELD_BLOCK_HEIGHT;
     }
 
     @Override
@@ -438,11 +375,12 @@ public abstract class AbstractSyscoinParams extends NetworkParameters implements
         }
     }
 
+    /*
     @Override
     public boolean isAuxPoWBlockVersion(long version) {
         return version >= BLOCK_MIN_VERSION_AUXPOW
             && (version & BLOCK_VERSION_FLAG_AUXPOW) > 0;
-    }
+    }*/
 
     /**
      * Get the target time between individual blocks. SYScoin uses this in its
@@ -452,14 +390,14 @@ public abstract class AbstractSyscoinParams extends NetworkParameters implements
      * @return the target spacing in seconds.
      */
     protected int getTargetSpacing(int height) {
-        final boolean digishieldAlgorithm = height >= this.getDigishieldBlockHeight();
-        final int retargetInterval = digishieldAlgorithm
-            ? this.getNewInterval()
-            : this.getInterval();
-        final int retargetTimespan = digishieldAlgorithm
-            ? this.getNewTargetTimespan()
-            : this.getTargetTimespan();
+        final int retargetInterval = this.getInterval();
+        final int retargetTimespan = this.getTargetTimespan();
         return retargetTimespan / retargetInterval;
+    }
+
+    @Override
+    public boolean isAuxPoWBlockVersion(long version) {
+        return (version & BLOCK_VERSION_FLAG_AUXPOW) > 0;
     }
 
     private static class CheckpointEncounteredException extends Exception {

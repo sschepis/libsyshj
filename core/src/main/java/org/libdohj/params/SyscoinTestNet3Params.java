@@ -47,9 +47,9 @@ public class SyscoinTestNet3Params extends AbstractSyscoinParams {
         p2shHeader = 196;
         acceptableAddressCodes = new int[] { addressHeader, p2shHeader };
         dumpedPrivateKeyHeader = 241;
-        genesisBlock.setTime(1391503289L);
+        genesisBlock.setTime(1524507866L);
         genesisBlock.setDifficultyTarget(0x1e0ffff0L);
-        genesisBlock.setNonce(997879);
+        genesisBlock.setNonce(442226);
         spendableCoinbaseDepth = 30;
         subsidyDecreaseBlockCount = 100000;
         String genesisHash = genesisBlock.getHashAsString();
