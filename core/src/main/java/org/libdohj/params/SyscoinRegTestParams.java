@@ -41,7 +41,7 @@ public class SyscoinRegTestParams extends SyscoinTestNet3Params {
         interval = Integer.MAX_VALUE;
         maxTarget = MAX_TARGET;
         subsidyDecreaseBlockCount = 150;
-        port = 19444;
+        port = 18369;
         id = ID_SYS_REGTEST;
         packetMagic = 0xfabfb5da;
     }

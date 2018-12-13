@@ -34,11 +34,11 @@ public class SyscoinMainNetParams extends AbstractSyscoinParams {
 
     public SyscoinMainNetParams() {
         super(DIFFICULTY_CHANGE_TARGET);
-        dumpedPrivateKeyHeader = 158; //This is always addressHeader + 128
-        addressHeader = 30;
-        p2shHeader = 22;
+        dumpedPrivateKeyHeader = 128; // See chainparams.cpp SECRET_ADDRESS_SYS
+        addressHeader = 63;
+        p2shHeader = 5;
         acceptableAddressCodes = new int[] { addressHeader, p2shHeader };
-        port = 22556;
+        port = 8369;
         packetMagic = 0xc0c0c0c0;
         // Note that while BIP44 makes HD wallets chain-agnostic, for legacy
         // reasons we use a Sys-specific header for main net. At some point
@@ -49,7 +49,7 @@ public class SyscoinMainNetParams extends AbstractSyscoinParams {
         genesisBlock.setTime(1525170117L);
         genesisBlock.setNonce(2559938L);
         id = ID_SYS_MAINNET;
-        subsidyDecreaseBlockCount = 100000;
+        subsidyDecreaseBlockCount = 525600;
         spendableCoinbaseDepth = 100;
 
         // Note this is an SHA256 hash, not a Scrypt hash. Scrypt hashes are only

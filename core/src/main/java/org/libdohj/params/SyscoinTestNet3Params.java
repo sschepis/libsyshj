@@ -42,16 +42,16 @@ public class SyscoinTestNet3Params extends AbstractSyscoinParams {
         packetMagic = 0xfcc1b7dc;
 
         maxTarget = Utils.decodeCompactBits(0x1e0fffffL);
-        port = 44556;
-        addressHeader = 113;
+        port = 18369;
+        addressHeader = 65;
         p2shHeader = 196;
         acceptableAddressCodes = new int[] { addressHeader, p2shHeader };
-        dumpedPrivateKeyHeader = 241;
+        dumpedPrivateKeyHeader = 239;
         genesisBlock.setTime(1524507866L);
         genesisBlock.setDifficultyTarget(0x1e0ffff0L);
         genesisBlock.setNonce(442226);
         spendableCoinbaseDepth = 30;
-        subsidyDecreaseBlockCount = 100000;
+        subsidyDecreaseBlockCount = 525600;
         String genesisHash = genesisBlock.getHashAsString();
         checkState(genesisHash.equals("bb0a78264637406b6360aad926284d544d7049f45189db5664f3c4d07350559e"));
         alertSigningKey = Hex.decode("042756726da3c7ef515d89212ee1705023d14be389e25fe15611585661b9a20021908b2b80a3c7200a0139dd2b26946606aab0eef9aa7689a6dc2c7eee237fa834");
